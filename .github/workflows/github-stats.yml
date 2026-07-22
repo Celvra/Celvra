@@ -13,31 +13,26 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2. 配置 Python 环境
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      # 3. 克隆统计工具仓库
-      - name: Clone github-stats
+      # 2. 从 Releases 下载最新的 Linux 可执行二进制文件并赋予执行权限
+      - name: Download github-stats binary
         run: |
-          git clone https://github.com/jstrieb/github-stats.git --depth 1
+          curl -sL https://github.com/jstrieb/github-stats/releases/latest/download/github-stats_x86_64-linux -o github-stats
+          chmod +x github-stats
 
-      # 4. 直接运行生成程序（原生标准库，无需 pip 安装依赖）
+      # 3. 运行二进制文件生成 SVG 图表
       - name: Generate Stats
         env:
           ACCESS_TOKEN: ${{ secrets.PAT }}
           ACCOUNT_NAME: Celvra
         run: |
-          python github-stats/src/main.py
+          ./github-stats
 
-      # 5. 清理临时拉取的源码文件夹
-      - name: Clean up generator folder
+      # 4. 清理下载的可执行程序
+      - name: Clean up binary
         run: |
-          rm -rf github-stats
+          rm -f github-stats
 
-      # 6. 提交生成的 SVG 文件到你的仓库
+      # 5. 提交生成的 SVG 文件到仓库
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
