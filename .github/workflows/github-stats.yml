@@ -3,21 +3,47 @@ name: Generate GitHub Stats
 on:
   schedule:
     - cron: "0 0 * * *" # 每天零点自动更新数据
-  workflow_dispatch: # 支持在 GitHub 页面手动点击触发
+  workflow_dispatch: # 支持手动触发
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      # 1. 拉取你的主页仓库
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      # 运行 jstrieb/github-stats 生成卡片
-      - uses: jstrieb/github-stats@master
+      # 2. 配置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          user: Celvra
-          token: ${{ secrets.PAT }}
+          python-version: '3.x'
 
-      # 自动将生成的 SVG 提交保存回仓库
+      # 3. 克隆统计工具仓库
+      - name: Clone github-stats
+        run: |
+          git clone https://github.com/jstrieb/github-stats.git --depth 1
+
+      # 4. 安装依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r github-stats/requirements.txt
+
+      # 5. 运行生成程序
+      - name: Generate Stats
+        env:
+          ACCESS_TOKEN: ${{ secrets.PAT }}
+          ACCOUNT_NAME: Celvra
+        run: |
+          python github-stats/src/main.py
+
+      # 6. 清理临时拉取的源码文件夹
+      - name: Clean up generator folder
+        run: |
+          rm -rf github-stats
+
+      # 7. 提交生成的 SVG 文件到你的仓库
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
