@@ -25,13 +25,17 @@ jobs:
           curl -sL https://github.com/jstrieb/github-stats/releases/latest/download/github-stats_x86_64-linux -o github-stats
           chmod +x github-stats
 
-      # 3. 运行程序生成 SVG
+      # 3. 运行程序生成 SVG，并强制设为透明底
       - name: Generate Stats
         env:
           ACCESS_TOKEN: ${{ secrets.PAT }}
           ACCOUNT_NAME: Celvra
         run: |
           ./github-stats
+          # 处理主要卡片
+          sed -i 's/fill="#[0-9a-fA-F]*"/fill="none"/1' overview.svg
+          # 处理语言百分比卡片
+          sed -i 's/fill="#[0-9a-fA-F]*"/fill="none"/1' languages.svg
 
       # 4. 清理二进制文件
       - name: Clean up binary
@@ -44,5 +48,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff-index --quiet HEAD || git commit -m "Update GitHub Stats SVG"
+          git diff-index --quiet HEAD || git commit -m "Update GitHub Stats SVG for Celvra"
           git push

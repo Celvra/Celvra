@@ -1,6 +1,6 @@
 <h1 align="left">👋 Hi there! I'm <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Google+Sans+Flex&size=32&duration=3000&pause=500&color=FFB3B2&width=140&height=45&vCenter=true&lines=Celvra" alt="Typing SVG" valign="middle" /></a></h1>
 
-
+<a href="#languages"><img src="./languages.svg" alt="languages" align="left" /></a>
 
 ```yaml
 frontend-stack: 
@@ -16,8 +16,7 @@ full-stack:
 
 # I love making something new! 
 
-
-
+<a href="#overview"><img src="./overview.svg" alt="overview" align="right" /></a>
 
 ![Profile Views](https://komarev.com/ghpvc/?username=Celvra) 
 [![visit my blog](https://img.shields.io/badge/visit_my-blog-brightgreen?labelColor=gray)](https://x0.fan/)
