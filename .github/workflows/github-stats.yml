@@ -5,7 +5,6 @@ on:
     - cron: "0 0 * * *" # 每天零点自动更新数据
   workflow_dispatch: # 支持手动触发
 
-# 显式开启工作流写权限
 permissions:
   contents: write
 
@@ -13,40 +12,47 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      # 1. 拉取仓库（使用 PAT 确保有 Push 权限）
+      # 1. 拉取你的主页仓库
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT }}
 
-      # 2. 从 Releases 下载最新的 Linux 二进制文件
-      - name: Download github-stats binary
-        run: |
-          curl -sL https://github.com/jstrieb/github-stats/releases/latest/download/github-stats_x86_64-linux -o github-stats
-          chmod +x github-stats
+      # 2. 配置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-      # 3. 运行程序生成 SVG，并强制设为透明底
+      # 3. 克隆 rahul-jha98 的透明版仓库
+      - name: Clone repo
+        run: |
+          git clone https://github.com/rahul-jha98/github-stats-transparent.git stats-builder
+
+      # 4. 安装其 requirements.txt 中的 Python 依赖
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r stats-builder/requirements.txt
+
+      # 5. 运行 generate_images.py 生成透明 SVG
       - name: Generate Stats
         env:
           ACCESS_TOKEN: ${{ secrets.PAT }}
           ACCOUNT_NAME: Celvra
         run: |
-          ./github-stats
-          # 处理主要卡片
-          sed -i 's/fill="#[0-9a-fA-F]*"/fill="none"/1' overview.svg
-          # 处理语言百分比卡片
-          sed -i 's/fill="#[0-9a-fA-F]*"/fill="none"/1' languages.svg
+          cd stats-builder
+          python generate_images.py
+          # 把生成的 svg 复制到仓库根目录
+          cp overview.svg languages.svg ../ 2>/dev/null || true
+          cd ..
+          rm -rf stats-builder
 
-      # 4. 清理二进制文件
-      - name: Clean up binary
-        run: |
-          rm -f github-stats
-
-      # 5. 提交生成的 SVG 文件到仓库
+      # 6. 提交生成的透明 SVG 到你的仓库
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff-index --quiet HEAD || git commit -m "Update GitHub Stats SVG for Celvra"
+          git diff-index --quiet HEAD || git commit -m "Update transparent GitHub Stats SVG"
           git push
