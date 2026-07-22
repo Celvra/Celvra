@@ -16,27 +16,34 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
 
-      - name: Generate overview.svg
-        uses: lowlighter/metrics@latest
+      - uses: actions/setup-python@v4
         with:
-          filename: overview.svg
-          token: ${{ secrets.PAT }}
-          base: header, activity, repositories
-          base_indepth: yes
-          config_display: columns
-          config_padding: "0, 6%"
+          python-version: '3.10'
 
-      - name: Generate languages.svg
-        uses: lowlighter/metrics@latest
-        with:
-          filename: languages.svg
-          token: ${{ secrets.PAT }}
-          base: ""
-          plugin_languages: yes
-          plugin_languages_details: bytes-size, percentage
-          plugin_languages_limit: 8
-          plugin_languages_indepth: yes
-          config_padding: "0, 6%"
+      - name: Clone original repo
+        run: |
+          git clone https://github.com/jstrieb/github-stats.git stats-builder
+          # 把背景色改成透明
+          sed -i 's/fill="white"/fill="none"/g' stats-builder/templates/*.svg
+          sed -i 's/fill="#fff"/fill="none"/g' stats-builder/templates/*.svg
+          sed -i 's/fill="#FFFFFF"/fill="none"/g' stats-builder/templates/*.svg
+          # 增加 202 重试
+          sed -i 's/for _ in range(60):/for _ in range(300):/' stats-builder/github_stats.py
+          sed -i 's/await asyncio.sleep(2)/await asyncio.sleep(4)/' stats-builder/github_stats.py
+
+      - name: Install dependencies
+        run: |
+          pip install -r stats-builder/requirements.txt
+
+      - name: Generate Stats
+        env:
+          ACCESS_TOKEN: ${{ secrets.PAT }}
+        run: |
+          cd stats-builder
+          python generate_images.py
+          cp generated/overview.svg generated/languages.svg ../
+          cd ..
+          rm -rf stats-builder
 
       - name: Commit and Push
         run: |
