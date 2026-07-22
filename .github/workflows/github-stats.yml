@@ -20,14 +20,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Clone original repo
+      - name: Clone transparent stats repo
         run: |
-          git clone https://github.com/jstrieb/github-stats.git stats-builder
-          # 把背景色改成透明
-          sed -i 's/fill="white"/fill="none"/g' stats-builder/templates/*.svg
-          sed -i 's/fill="#fff"/fill="none"/g' stats-builder/templates/*.svg
-          sed -i 's/fill="#FFFFFF"/fill="none"/g' stats-builder/templates/*.svg
-          # 增加 202 重试
+          git clone https://github.com/rahul-jha98/github-stats-transparent.git stats-builder
+          # 增加 202 重试次数（原 60 次不够）
           sed -i 's/for _ in range(60):/for _ in range(300):/' stats-builder/github_stats.py
           sed -i 's/await asyncio.sleep(2)/await asyncio.sleep(4)/' stats-builder/github_stats.py
 
