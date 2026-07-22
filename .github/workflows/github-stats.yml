@@ -29,17 +29,20 @@ jobs:
         run: |
           git clone https://github.com/rahul-jha98/github-stats-transparent.git stats-builder
 
-      # 4. 安装其 requirements.txt 中的 Python 依赖
+      # 4. 安装依赖
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r stats-builder/requirements.txt
 
-      # 5. 运行 generate_images.py 生成透明 SVG
+      # 5. 运行 generate_images.py 生成透明 SVG（补全缺少的环境变量）
       - name: Generate Stats
         env:
           ACCESS_TOKEN: ${{ secrets.PAT }}
           ACCOUNT_NAME: Celvra
+          COUNT_STATS_FROM_FORKS: ""
+          EXCLUDE_REPOS: ""
+          EXCLUDE_FORKS_FROM_LANGUAGE_STATS: ""
         run: |
           cd stats-builder
           python generate_images.py
