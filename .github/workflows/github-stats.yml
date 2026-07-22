@@ -5,21 +5,27 @@ on:
     - cron: "0 0 * * *" # 每天零点自动更新数据
   workflow_dispatch: # 支持手动触发
 
+# 显式开启工作流写权限
+permissions:
+  contents: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      # 1. 拉取你的主页仓库
+      # 1. 拉取仓库（使用 PAT 确保有 Push 权限）
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
 
-      # 2. 从 Releases 下载最新的 Linux 可执行二进制文件并赋予执行权限
+      # 2. 从 Releases 下载最新的 Linux 二进制文件
       - name: Download github-stats binary
         run: |
           curl -sL https://github.com/jstrieb/github-stats/releases/latest/download/github-stats_x86_64-linux -o github-stats
           chmod +x github-stats
 
-      # 3. 运行二进制文件生成 SVG 图表
+      # 3. 运行程序生成 SVG
       - name: Generate Stats
         env:
           ACCESS_TOKEN: ${{ secrets.PAT }}
@@ -27,7 +33,7 @@ jobs:
         run: |
           ./github-stats
 
-      # 4. 清理下载的可执行程序
+      # 4. 清理二进制文件
       - name: Clean up binary
         run: |
           rm -f github-stats
