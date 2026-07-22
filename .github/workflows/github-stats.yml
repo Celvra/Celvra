@@ -1,0 +1,27 @@
+name: Generate GitHub Stats
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 每天零点自动更新数据
+  workflow_dispatch: # 支持在 GitHub 页面手动点击触发
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # 运行 jstrieb/github-stats 生成卡片
+      - uses: jstrieb/github-stats@master
+        with:
+          user: Celvra
+          token: ${{ secrets.PAT }}
+
+      # 自动将生成的 SVG 提交保存回仓库
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "Update GitHub Stats SVG"
+          git push
