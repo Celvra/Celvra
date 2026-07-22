@@ -2,8 +2,8 @@ name: Generate GitHub Stats
 
 on:
   schedule:
-    - cron: "0 0 * * *" # 每天零点自动更新数据
-  workflow_dispatch: # 支持手动触发
+    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,50 +12,36 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      # 1. 拉取你的主页仓库
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
 
-      # 2. 配置 Python 环境
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Generate overview.svg
+        uses: lowlighter/metrics@latest
         with:
-          python-version: '3.10'
+          filename: overview.svg
+          token: ${{ secrets.PAT }}
+          base: header, activity, repositories
+          base_indepth: yes
+          config_display: columns
+          config_padding: "0, 6%"
 
-      # 3. 克隆 rahul-jha98 的透明版仓库
-      - name: Clone repo
-        run: |
-          git clone https://github.com/rahul-jha98/github-stats-transparent.git stats-builder
+      - name: Generate languages.svg
+        uses: lowlighter/metrics@latest
+        with:
+          filename: languages.svg
+          token: ${{ secrets.PAT }}
+          base: ""
+          plugin_languages: yes
+          plugin_languages_details: bytes-size, percentage
+          plugin_languages_limit: 8
+          plugin_languages_indepth: yes
+          config_padding: "0, 6%"
 
-      # 4. 安装依赖
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r stats-builder/requirements.txt
-
-      # 5. 运行 generate_images.py 生成透明 SVG（补全缺少的环境变量）
-      - name: Generate Stats
-        env:
-          ACCESS_TOKEN: ${{ secrets.PAT }}
-          ACCOUNT_NAME: Celvra
-          COUNT_STATS_FROM_FORKS: ""
-          EXCLUDE_REPOS: ""
-          EXCLUDE_FORKS_FROM_LANGUAGE_STATS: ""
-        run: |
-          cd stats-builder
-          python generate_images.py
-          # 把生成的 svg 复制到仓库根目录
-          cp overview.svg languages.svg ../ 2>/dev/null || true
-          cd ..
-          rm -rf stats-builder
-
-      # 6. 提交生成的透明 SVG 到你的仓库
       - name: Commit and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff-index --quiet HEAD || git commit -m "Update transparent GitHub Stats SVG"
+          git diff-index --quiet HEAD || git commit -m "Update GitHub Stats SVGs"
           git push
