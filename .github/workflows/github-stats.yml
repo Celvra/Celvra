@@ -34,6 +34,7 @@ jobs:
       - name: Generate Stats
         env:
           ACCESS_TOKEN: ${{ secrets.PAT }}
+          COUNT_STATS_FROM_FORKS: ""
         run: |
           cd stats-builder
           python generate_images.py
