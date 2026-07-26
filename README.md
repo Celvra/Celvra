@@ -23,7 +23,7 @@ full-stack:
 [![see my repos](https://img.shields.io/badge/see_my-repos-brightgreen?labelColor=gray)](https://github.com/Celvra?tab=repositories)
 
 - 🏢 I'm currently work at a one-person team `O/²`
-- 💬 I like to working with `AI`
+- 💬 I'm working with `AI`
 - 📖 Learn more about my projects on [my blog](https://x0.fan/)
 - ✨ My favourite design is [Material Design 3](m3.material.io)
 - 💻 Connect with me through [Email](mailto:qx@x0.fan)
