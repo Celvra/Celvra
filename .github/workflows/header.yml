@@ -1,0 +1,43 @@
+name: Generate Header SVG
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: header-generator/package-lock.json
+
+      - name: Install dependencies
+        working-directory: header-generator
+        run: npm ci
+
+      - name: Generate header.svg
+        working-directory: header-generator
+        env:
+          ACCESS_TOKEN: ${{ secrets.PAT }} # 沿用原来的 secret 名
+          GH_USER: ${{ github.repository_owner }}
+        run: npm run generate
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash
+          git add header.svg
+          git diff-index --quiet HEAD || git commit -m "Update header.svg"
+          git push
